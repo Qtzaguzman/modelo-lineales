@@ -1,0 +1,123 @@
+\documentclass[11pt, twoside]{article}
+\usepackage{graphicx, geometry, amssymb, amsmath, amsfonts, hyperref, accents, bm} % Required for inserting images
+\usepackage{tcolorbox}
+\usepackage{listings}
+
+\title{ \scshape Modelos Lineales \\ Tarea 3}
+\author{\scshape Erick Javier Suárez Sánchez \\ 12333084}
+\date{Febrero 2024}
+
+\geometry{
+    margin=1.5cm,
+    paper = letterpaper
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    }
+
+\newcommand{\myvec}[1]{\bm{#1}}
+
+\newcommand{\hmyvec}[1]{\widehat{\bm{#1}}}
+
+\newcommand{\RSS}[0]{\text{RSS}(\myvec{\beta})}
+
+\newcommand{\deriv}[1]{\dfrac{\partial \,\RSS}{\partial \, #1 }}
+
+
+
+\begin{document}
+\allowdisplaybreaks
+\setlength{\parindent}{0pt}
+\maketitle
+
+\paragraph{Problema 1} Considere el modelo 
+\begin{align*}
+    {Y}_{ijk} = \mu {\alpha}_{i} + {\beta}_{j} + {\epsilon}_{ijk}
+\end{align*}
+donde ${\epsilon}_{ijk} \sim N(0,{\sigma}^{2})$. Este modelo se analuza utilizando el siguiente conjunto de datos:
+\begin{table}[h]
+    \centering
+    \begin{tabular}{ccccccccccc}
+    \hline \hline
+    & & & & \multicolumn{7}{c}{\textbf{B}} \\ \hline
+    & & & & $\mathbf{1}$ & & $\mathbf{2}$ & & $\mathbf{3}$ & & $\mathbf{4}$ \\ 
+    \textbf{A} & & $\mathbf{1}$ & & 12 & & --- & & 24 & & 30 \\
+    & & $\mathbf{2}$ & & --- & & --- & & 6 & & 11 \\
+    & & $\mathbf{3}$ & & 21 & & 15 & & 16 & & --- \\ 
+    \hline \hline
+    \end{tabular}
+    \caption{Datos del problema 1}
+    \label{tab1P1}
+\end{table}
+\begin{enumerate}
+    \item[a)] Obtenga la matriz diseño de $X$ y el vector de parámetros $\beta$, obtenga el rango de $X$. es de rango completo ?
+
+    \item[b)] Obtenga las \textbf{Ecuaciones normales} para este modelo
+
+    \item[c)] Resuelva las ecuaciones normales usando la inversa generalizada de ${X}^{t}X$
+
+    \item[d)] Resuelva las ecuaciones normales usando el método de las restricciones (proponga una restricción y resuelva).
+
+    \item[e)] Reparametrizar el modelo ($Y = X\beta + \epsilon$) a ($Y = W\theta + \epsilon$) mediante variables ficticias (dummy). Escriba $W$ y obtenga el rango de $W$, encuentre $\hat{\theta} = {\left({W}^{t}W\right)}^{-1}{W}^{t}y$. Identifique la relación de $\theta$ con $\beta$ (use el hecho de que $W\theta = X\beta$).
+
+    \item[f)] ¿Cuál es el número de combinaciones lineales estimables básicas linealmente independientes ? (tip vea la dimensión de $\theta$ o el rango de $W$). Especificar un conjnto de funciones lineales estimables que forman una base para el espacio de todas las funciones lineales estimables para este modelo. (tip use la matriz Echelon).
+
+    \item[g)] ¿Es estimable ${\mu}_{12} = \mu + {\alpha}_{1} + {\beta}_{2}$ ? ¿Por qué o por qué no?
+
+    \item[h)] Demuestre que $\displaystyle \frac{1}{4}\sum_{j = 1}^{4}{(\mu + {\alpha}_{i} + {\beta}_{j})}$ es estimable para $i = 1,2,3$ y encuentre un estimador.
+\end{enumerate}
+
+\paragraph{Problema 2} La siguiente tabla enumera los rendimientos cuando se probaron cinco variedades de plantas y cuatro fertilizantes. 
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lcccccccccc}
+\hline \hline 
+& & \multicolumn{9}{c}{Variedad} \\ \hline
+\multicolumn{2}{l}{Fertilizador} & $\mathbf{1}$ & & $\mathbf{2}$ & & $\mathbf{3}$ & & $\mathbf{4}$ & & $\mathbf{5}$ \\
+$\mathbf{1}$ & & 57 & & 26 & & 39 & &  23 & & 48 \\
+& & 46 & & 38 & & --- & & 36 & & 35 \\
+& & --- & & 20 & & --- & & 18 & & --- \\
+$\mathbf{2}$ & & 67 & & 44 & & 57 & & 74 & & 61 \\
+& & 72 & &  68 & & 61 & & 47 & & --- \\
+& & 66 & & 64 & & --- & & 69 & & --- \\
+$\mathbf{3}$ & & 95 & & 92 & & 91 & & 98 & & 78 \\
+& & 90 & & 89 & & 82 & & 85 & & 89 \\
+& & 89 & & --- & & --- & & --- & & 95 \\
+$\mathbf{4}$ & & 92 & & 96 & & 98 & & 99 & & 99 \\
+& & 88 & & 95 & & 93 & & 90 & & --- \\
+& & --- & & --- & & 98 & & 98 & & --- \\ 
+\hline \hline
+    \end{tabular}
+    \caption{Rendimiento de cinco variedades de plantas tratadas con cuatro fertilizantes}
+    \label{tab2P2}
+\end{table}
+\begin{enumerate}
+    \item[1.] Escriba el modelo \emph{anova de dos vías con interacción} para modelar estos datos.
+    \item[2.] Encuentre la matriz de diseño
+    \item[3.] Escriba las ecuaciones normales
+    \item[4.] Resuelva la ecuación normal usando inversa generalizada de $({X}^{t}X)$.
+    \item[5.] Reparametrizar el modelo ($Y = X\beta + \epsilon$) a ($Y = W\theta + \epsilon$) mediante variables ficticias (dummy). Escriba $W$ y encuentre $\hat{\theta} = {\left({W}^{t}W\right)}^{-1}{W}^{t}y$. 
+    \item[6.] Encuentre otra reparametrización y encuentre $W$ utilizando el modelo de celdas medias.
+    \item[7.] Para reparametrización con dummy indicar la relación de $\beta$ con $\theta$. (es decir $\theta = {\left({W}^{t}W\right)}^{-1}{W}^{t}X \beta $). Es decir, encuentre $L = {\left({W}^{t}W\right)}^{-1}{W}^{t}X $ y explique las combinaciones lineales.
+    \item[8.] Para cada solución, realice una predicción y compare.
+\end{enumerate}
+
+\paragraph{Problema 3}
+
+\paragraph{Problema 4} Considere el modelo:
+\begin{align*}
+    {y}_{1} &= {\tau}_{1} + {\tau}_{2} + {\tau}_{3} + {\epsilon}_{1} \\ \\
+    {y}_{2} &= {\tau}_{1} + {\tau}_{3} + {\epsilon}_{2} \\ \\
+    {y}_{3} &= {\tau}_{2} + {\epsilon}_{3}
+\end{align*}
+\begin{enumerate}
+    \item[a)] Escriba el modelo en forma matricial. ¿Cuál es el rango de la matriz diseño?
+    \item[b)] ¿Cuáles (si los hay) de los parámetros individuales son estimables ?
+    \item[c)] ¿Es estimable ${\tau}_{1} - 2{\tau}_{2} + {\tau}_{3}$ ? Explica porque.
+\end{enumerate}
+
+\end{document}

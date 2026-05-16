@@ -1,0 +1,487 @@
+\documentclass[12pt,a4paper]{report}
+\input{codigo/codigofuente1}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{makeidx}
+\usepackage{graphicx}
+%\usepackage{fourier}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\author{Guadalupe Monroy}
+\begin{document}
+\include{codigo/portadacp}
+\begin{enumerate}
+%Usar SAS/IML o R para resolver.
+\item Sea $\textbf{A}=\begin{bmatrix}7 & -3 & 2\\4 & 9 & 5\end{bmatrix}$
+\begin{verbatim}
+A=matrix(c(7,-3,2,4,9,5),ncol=3, byrow = TRUE)
+A
+> A
+     [,1] [,2] [,3]
+[1,]    7   -3    2
+[2,]    4    9    5
+\end{verbatim}
+\begin{enumerate}
+\item Encuentre $A^{t}$
+\begin{verbatim}
+t(A)
+     [,1] [,2]
+[1,]    7    4
+[2,]   -3    9
+[3,]    2    5
+\end{verbatim}
+\item Encuentre $(A^{t})^{t}=A$
+\begin{verbatim}
+t(t(A))
+     [,1] [,2] [,3]
+[1,]    7   -3    2
+[2,]    4    9    5
+\end{verbatim}
+\item Obtenga $A^{t}A=AA^{t}$
+\begin{verbatim}
+> t(A)%*%A
+     [,1] [,2] [,3]
+[1,]   65   15   34
+[2,]   15   90   39
+[3,]   34   39   29
+> A%*%t(A)
+     [,1] [,2]
+[1,]   62   11
+[2,]   11  122
+\end{verbatim}
+No son iguales.
+\end{enumerate}
+\item Sea $\textbf{A}=\begin{bmatrix}2 & 4\\1 & 3\end{bmatrix}$ y $\textbf{B}=\begin{bmatrix}1 & 3\\2 & -1\end{bmatrix}$ 
+\begin{verbatim}
+A=matrix(c(2,4,1,3), ncol = 2, byrow = TRUE)
+> A
+     [,1] [,2]
+[1,]    2    4
+[2,]    1    3
+> B=matrix(c(1,3,2,-1), ncol = 2, byrow = TRUE)
+> B
+     [,1] [,2]
+[1,]    1    3
+[2,]    2   -1
+\end{verbatim}
+\begin{enumerate}
+\item Encuentre $AB$ y $BA$
+\begin{verbatim}
+A%*%B
+     [,1] [,2]
+[1,]   10    2
+[2,]    7    0
+B%*%A
+     [,1] [,2]
+[1,]    5   13
+[2,]    3    5
+\end{verbatim}
+\item Encuentre $\vert A\vert$, $\vert B\vert$ y $\vert AB\vert$ (los determinantes)
+\begin{verbatim}
+det(A)
+[1] 2
+> det(B)
+[1] -7
+> det(A%*%B)
+[1] -14
+\end{verbatim}
+\item Obtenga $\vert BA\vert$ y compare con $\vert AB\vert$
+\begin{verbatim}
+> det(B%*%A)
+[1] -14
+> det(A%*%B)
+[1] -14
+\end{verbatim}
+Son iguales.
+\item Obtenga la $traza(AB)$ y compare con la $traza(BA)$
+\begin{verbatim}
+> trAB <- sum(diag(A%*%B))
+> trAB
+[1] 10
+> trBA <- sum(diag(B%*%A))
+> trBA
+[1] 10
+\end{verbatim}
+Son iguales.
+\item Obtenga los eigenvalores de $AB$ y de $BA$
+\begin{verbatim}
+> eigen(A%*%B)$values
+[1] 11.244998 -1.244998
+> eigen(B%*%A)$values
+[1] 11.244998 -1.244998
+\end{verbatim}
+\item Obtenga el Rango de $A$ y de $B$
+\begin{verbatim}
+qr(A)$rank
+[1] 2
+> qr(B)$rank
+[1] 2
+\end{verbatim}
+\item Obtenga si existe la matriz inversa de $A^{-1}$ y de $B^{-1}$
+\begin{verbatim}
+> solve(A)
+     [,1] [,2]
+[1,]  1.5   -2
+[2,] -0.5    1
+> solve(B)
+          [,1]       [,2]
+[1,] 0.1428571  0.4285714
+[2,] 0.2857143 -0.1428571
+\end{verbatim}
+
+\end{enumerate}
+%----------------------------------
+\item 
+\begin{equation*}
+A=\begin{bmatrix}
+5 & -1 & 3\\
+-1 & 1 & 2\\
+3 & 2 & 7
+\end{bmatrix} \qquad
+B=\begin{bmatrix}
+6 & -2 & 3\\
+7 & 1 & 0\\
+2 & -3 & 5
+\end{bmatrix} \qquad
+C=\begin{bmatrix}
+2 & -3\\
+-1 & 4\\
+3 & 1
+\end{bmatrix}
+\end{equation*}
+
+Sean 
+\begin{equation*}
+x=\begin{bmatrix}
+3\\
+-1\\
+2
+\end{bmatrix} \qquad
+y=\begin{bmatrix}
+3\\
+2\\
+4
+\end{bmatrix} \qquad
+z=\begin{bmatrix}
+2\\
+5\\
+\end{bmatrix}
+\end{equation*}
+\begin{verbatim}
+> A=matrix(c(5,-1,3,-1,1,2,3,2,7),ncol=3, byrow = TRUE)
+> A
+     [,1] [,2] [,3]
+[1,]    5   -1    3
+[2,]   -1    1    2
+[3,]    3    2    7
+> B=matrix(c(6,-2,3,7,1,0,2,-3,5),ncol=3, byrow = TRUE)
+> B
+     [,1] [,2] [,3]
+[1,]    6   -2    3
+[2,]    7    1    0
+[3,]    2   -3    5
+> C=matrix(c(2,-3,-1,4,3,1),ncol=2, byrow = TRUE)
+> C
+     [,1] [,2]
+[1,]    2   -3
+[2,]   -1    4
+[3,]    3    1
+> x<-matrix(c(3,-1,2),ncol=1, byrow = TRUE)
+> x
+     [,1]
+[1,]    3
+[2,]   -1
+[3,]    2
+> y<-matrix(c(3,2,4),ncol=1, byrow = TRUE)
+> y
+     [,1]
+[1,]    3
+[2,]    2
+[3,]    4
+> z<-matrix(c(2,5),ncol=1, byrow = TRUE)
+> z
+     [,1]
+[1,]    2
+[2,]    5
+\end{verbatim}
+\begin{enumerate}
+\item $Bx$
+\begin{verbatim}
+> B %*% x
+     [,1]
+[1,]   26
+[2,]   20
+[3,]   19
+\end{verbatim}
+\item $y^{t}B$
+\begin{verbatim}
+> t(y) %*%B 
+     [,1] [,2] [,3]
+[1,]   40  -16   29
+\end{verbatim}
+\item $x^{t}Ax$
+\begin{verbatim}
+> t(x) %*%A %*%x  
+     [,1]
+[1,]  108
+\end{verbatim}
+\item $x^{t}Cz$
+\begin{verbatim}
+> t(x) %*%C %*%z  
+     [,1]
+[1,]  -29
+\end{verbatim}
+\item $x^{t}x$
+\begin{verbatim}
+> t(x) %*%x 
+     [,1]
+[1,]   14
+\end{verbatim}
+\item $x^{t}y$
+\begin{verbatim}
+> t(x) %*%y
+     [,1]
+[1,]   15
+\end{verbatim}
+\item $xx^{t}$
+\begin{verbatim}
+> x%*%t(x)
+     [,1] [,2] [,3]
+[1,]    9   -3    6
+[2,]   -3    1   -2
+[3,]    6   -2    4
+\end{verbatim}
+\item $xy^{t}$
+\begin{verbatim}
+> x%*%t(y)
+     [,1] [,2] [,3]
+[1,]    9    6   12
+[2,]   -3   -2   -4
+[3,]    6    4    8
+\end{verbatim}
+\item $B^{t}B$
+\begin{verbatim}
+> t(B) %*%B 
+     [,1] [,2] [,3]
+[1,]   89  -11   28
+[2,]  -11   14  -21
+[3,]   28  -21   34
+\end{verbatim}
+\item $yz^{t}$
+\begin{verbatim}
+> y%*%t(z)
+     [,1] [,2]
+[1,]    6   15
+[2,]    4   10
+[3,]    8   20
+\end{verbatim}
+\item $\sqrt{y^{t}y}$
+\begin{verbatim}
+> sqrt(t(y) %*%y)
+         [,1]
+[1,] 5.385165
+\end{verbatim}
+\item $B^{t}B$
+\begin{verbatim}
+> t(B) %*%B 
+     [,1] [,2] [,3]
+[1,]   89  -11   28
+[2,]  -11   14  -21
+[3,]   28  -21   34
+\end{verbatim}
+\item Encuentre $x+y$ y $x-y$
+\begin{verbatim}
+> x+y
+     [,1]
+[1,]    6
+[2,]    1
+[3,]    6
+> x-y
+     [,1]
+[1,]    0
+[2,]   -3
+[3,]   -2
+\end{verbatim}
+\end{enumerate}
+\item Escriba los sistemas de ecuaciones lineales en la forma $\textbf{Ax=b}$, Compare el rango de $\textbf{la matriz aumentada A*}$ con el rango del coeficiente matriz $\textbf{A}$ para cada uno de los
+siguientes sistemas de ecuaciones, clasifique los sistemas de ecuaciones. Encontrar las soluciones donde existan.\\
+
+\begin{enumerate}
+\item 
+\begin{align*}
+x_{1}+2x_{2}+3x_{3}&=6\\
+x_{1}-x_{2}&=2\\
+x_{1}-x_{3}&=-1
+\end{align*}
+
+$\textbf{Ax=b}$
+\begin{equation*}
+A=\begin{bmatrix}
+1 & 2 & 3\\
+1 & -1 & 0\\
+1 & 0 & -1
+\end{bmatrix}
+\begin{bmatrix}
+x_{1}\\
+x_{2}\\
+x_{3}\\
+\end{bmatrix}
+\begin{bmatrix}
+6\\
+2\\
+-1
+\end{bmatrix}
+\end{equation*}
+
+
+$\textbf{La matriz aumentada A*}$
+
+\begin{equation*}
+A*=\left [
+  \begin{array}{rrr|r}
+1 & 2 & 3&6\\
+1 & -1 & 0& 2\\
+1 & 0 & -1& -1
+\end{array}
+\right ]
+\end{equation*}
+
+\begin{verbatim}
+> A=matrix(c(1,1,1,2,-1,0,3,0,-1),3,3)
+> b<-matrix(c(6,2,-1),3,1)
+> Aum<-cbind(A,b)
+> R(A)
+[1] 3
+> R(Aum)
+[1] 3
+\end{verbatim}
+
+El rango de las matrices $A$ y $A*$ es el mismo 3. $A$ es de rango completo pr lo que tiene soluciòn ùnica.
+Soluciòn del sistema:
+\begin{verbatim}
+> sol<-solve(A,b)
+> sol
+           [,1]
+[1,]  1.1666667
+[2,] -0.8333333
+[3,]  2.1666667
+\end{verbatim}
+
+\item 
+\begin{align*}
+x_{1}-x_{2}+2x_{3}&=2\\
+x_{1}-x_{2}-x_{3}&=-1\\
+2x_{1}-2x_{2}+x_{3}&=2
+\end{align*}
+
+$\textbf{Bx=b}$
+\begin{equation*}
+B=\begin{bmatrix}
+1 & -1 & 2\\
+1 & -1 & -1\\
+2 & -2 & 1
+\end{bmatrix}
+\begin{bmatrix}
+x_{1}\\
+x_{2}\\
+x_{3}\\
+\end{bmatrix}
+\begin{bmatrix}
+2\\
+-1\\
+2
+\end{bmatrix}
+\end{equation*}
+
+
+$\textbf{La matriz aumentada B*}$
+
+\begin{equation*}
+B*=\left [
+  \begin{array}{rrr|r}
+1 & -1 & 2 & 2\\
+1 & -1 & -1 & -1\\
+2 & -2 & 1 & 2
+\end{array}
+\right ]
+\end{equation*}
+
+\begin{verbatim}
+> B=matrix(c(1,1,2,-1,-1,-2,2,-1,1),3,3)
+> b1<-matrix(c(2,-1,2),3,1)
+> AumB<-cbind(B,b1)
+> R(B)
+[1] 2
+> R(AumB)
+[1] 3
+\end{verbatim}
+
+El rango de las matrices $B$ y $B*$ no es el mismo. No tiene solución.
+
+\item 
+\begin{align*}
+x_{1}+x_{2}+x_{3}+x_{4}&=8\\
+x_{1}-x_{2}-x_{3}-x_{4}&=6\\
+3x_{1}+x_{2}+x_{3}+x_{4}&=22
+\end{align*}
+
+$\textbf{Cx=b}$
+\begin{equation*}
+C=\begin{bmatrix}
+1 & 1 & 1 & 1\\
+1 & -1 & -1 & -1\\
+3 & 1 & 1 & 1
+\end{bmatrix}
+\begin{bmatrix}
+x_{1}\\
+x_{2}\\
+x_{3}\\
+x_{4}\\
+\end{bmatrix}
+=\begin{bmatrix}
+8\\
+6\\
+22
+\end{bmatrix}
+\end{equation*}
+
+
+$\textbf{La matriz aumentada C*}$
+
+\begin{equation*}
+C*=\left [
+  \begin{array}{rrrr|r}
+1 & 1 & 1 & 1 & 8\\
+1 & -1 & -1 & -1 & 6\\
+3 & 1 & 1 & 1 & 22
+\end{array}
+\right ]
+\end{equation*}
+
+\begin{verbatim}
+> C=matrix(c(1,1,3,1,-1,1,1,-1,1,1,-1,1),3,4)
+> b2<-matrix(c(8,6,22),3,1)
+> AumC<-cbind(C,b2)
+> R(C)
+[1] 2
+> R(AumC)
+[1] 2
+\end{verbatim}
+
+El rango de las matrices $C$ y $C*$ es el mismo, 2. $C$ es de rango incompleto por lo que tiene soluciones infinitas.
+Una solución del sistema utilizando la inversa generalizada es:
+\begin{verbatim}
+> invC<-Ginv(C)
+> solC<-invC%*%b2
+> solC
+     [,1]
+[1,]    7
+[2,]    1
+[3,]    0
+[4,]    0
+\end{verbatim}
+
+\end{enumerate}
+\end{enumerate}
+\end{document}

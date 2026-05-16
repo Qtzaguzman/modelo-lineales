@@ -1,0 +1,1130 @@
+\documentclass[10pt,a4paper]{report}
+\input{codigo/codigofuente1}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{makeidx}
+\usepackage{graphicx}
+%\usepackage{fourier}
+\setcounter{MaxMatrixCols}{100}
+\usepackage[left=1cm,right=1cm,top=2cm,bottom=2cm]{geometry}
+\author{Guadalupe Monroy}
+\begin{document}
+\include{codigo/portadacp}
+%------------EJERCICIO 1-----------
+%-----------------------------
+\paragraph{Problema 1} Considere el modelo
+
+\begin{align*}
+    {Y}_{ijk} = \mu + {\alpha}_{i} + {\beta}_{j} + {\epsilon}_{ijk}
+\end{align*}
+
+donde ${\epsilon}_{ijk} \sim N(0,{\sigma}^{2})$. Este modelo se analiza utilizando el siguiente conjunto de datos:\\
+\begin{table}[h]
+    \centering
+    \begin{tabular}{ccccccccccc}
+    \hline \hline
+    & & & & \multicolumn{7}{c}{\textbf{B}} \\ \hline
+    & & & & $\mathbf{1}$ & & $\mathbf{2}$ & & $\mathbf{3}$ & & $\mathbf{4}$ \\ 
+    \textbf{A} & & $\mathbf{1}$ & & 12 & & --- & & 24 & & 30 \\
+    & & $\mathbf{2}$ & & --- & & --- & & 6 & & 11 \\
+    & & $\mathbf{3}$ & & 21 & & 15 & & 16 & & --- \\ 
+    \hline \hline
+    \end{tabular}
+    \label{tab1P1}
+\end{table}
+
+\begin{enumerate}
+    \item[a)] Obtenga la matriz diseño de $X$ y el vector de parámetros $\beta$, obtenga el rango de $X$. es de rango completo ?\\
+\begin{verbatim}
+> #- Matriz diseño
+> X1<-ModelMatrix(Respuesta~A+B,Datos)
+> #X<-as.matrix(X1$X)
+> X <- X1$X
+> dim(X)
+[1] 8 8
+> R(X)
+[1] 6
+>#No es de rango completo
+\end{verbatim}
+La matriz diseño de $X$ y el vector de parámetros $\beta$ son: \\
+\[X=\begin{bmatrix}
+1 & 1 & 0 & 0 & 1 & 0 & 0 & 0 \\
+1 & 1 & 0 & 0 & 0 & 0 & 1 & 0 \\
+1 & 1 & 0 & 0 & 0 & 0 & 0 & 1 \\
+1 & 0 & 1 & 0 & 0 & 0 & 1 & 0 \\
+1 & 0 & 1 & 0 & 0 & 0 & 0 & 1 \\
+1 & 0 & 0 & 1 & 1 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 & 0 & 1 & 0 & 0 \\
+1 & 0 & 0 & 1 & 0 & 0 & 1 & 0
+\end{bmatrix}\; , \qquad \beta = \begin{bmatrix}
+\mu \\ \alpha_1 \\ \alpha_2 \\ \alpha_3 \\ 
+\beta_1 \\ \beta_2 \\ \beta_3 \\ \beta_4 
+\end{bmatrix}\]
+
+
+\item[b)] Obtenga las ecuaciones normales para este modelo.
+\begin{verbatim}
+#---b Ecuanciones normales-----
+#t(X)XB=t(X)Y
+X_t<-t(X)%*%X
+Y<-Datos$Respuesta
+ec_2<-t(X)%*%Y
+\end{verbatim}
+
+$$X^tX\underline{\beta} = X^t\underline{y}$$
+\begin{eqnarray*}
+\begin{bmatrix}
+8 & 3 & 2 & 3 & 2 & 1 & 3 & 2 \\
+3 & 3 & 0 & 0 & 1 & 0 & 1 & 1 \\
+2 & 0 & 2 & 0 & 0 & 0 & 1 & 1 \\
+3 & 0 & 0 & 3 & 1 & 1 & 1 & 0 \\
+2 & 1 & 0 & 1 & 2 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 & 0 & 1 & 0 & 0 \\
+3 & 1 & 1 & 1 & 0 & 0 & 3 & 0 \\
+2 & 1 & 1 & 0 & 0 & 0 & 0 & 2
+\end{bmatrix}\begin{bmatrix}
+\mu \\ \alpha_1 \\ \alpha_2 \\ \alpha_3 \\ 
+\beta_1 \\ \beta_2 \\ \beta_3 \\ \beta_4 
+\end{bmatrix} &=& \begin{bmatrix}
+135 \\ 66 \\ 17 \\ 52 \\ 33 \\ 15 \\ 46 \\ 41
+\end{bmatrix}
+\end{eqnarray*}
+
+\item[c)] Resuelva las ecuaciones normales usando la inversa generalizada de ${X}^{t}X$.\\
+
+Para la matriz diseño de rango incompleto  $\underline{\beta} =({X}^{t}X)^-X^{t}\underline{y}$.
+\begin{verbatim}
+> # Vector de parámetros estimados usando inversa generalizada de X'X
+> beta1 <- Ginv(t(X)%*%X)%*%t(X)%*%Y
+\end{verbatim}
+\begin{equation*}
+\underline{\beta}=\begin{bmatrix}
+ 28.4000000\\
+  0.1999999\\
+-15.9999999\\
+ 0.0000000\\
+ -12.0000001\\
+-13.4000000\\
+ -7.7999999\\
+ 0.0000000\\
+\end{bmatrix}
+\end{equation*}
+
+\item[d)] Resuelva las ecuaciones normales usando el método de las restricciones (proponga una restricción y resuelva).\\
+
+Restricciones:\\
+ $\alpha_1+\alpha_2+\alpha_3=0$\\
+ $\beta_1+\beta_2+\beta_3+\beta_4=0$\\
+ 
+\begin{verbatim}
+> r1<-c(0,1,1,1,0,0,0,0)
+> r2<-c(0,0,0,0,1,1,1,1)
+> X2<-rbind(X,r1,r2)
+> R(X2)
+[1] 8
+\end{verbatim} 
+\begin{equation*}
+X2=\begin{bmatrix}
+1&1&0&0&1&0&0&0\\
+1&1&0&0&0&0&1&0\\
+1&1&0&0&0&0&0&1\\
+1&0&1&0&0&0&1&0\\
+1&0&1&0&0&0&0&1\\
+1&0&0&1&1&0&0&0\\
+1&0&0&1&0&1&0&0\\
+1&0&0&1&0&0&1&0\\
+0&1&1&1&0&0&0&0\\
+0&0&0&0&1&1&1&1\\
+\end{bmatrix}
+\end{equation*}
+La matriz $\begin{bmatrix}
+X \\ P^t
+\end{bmatrix}$ es de rango completo.\\
+
+Ecuaciones normales restringidas.\\
+\[\begin{bmatrix}
+\underline{\beta} \\ \underline{\theta} 
+\end{bmatrix} = \begin{bmatrix}
+X^tX & P\\
+P^t & 0 
+\end{bmatrix}^{-1} \begin{bmatrix}
+X^t\underline{y} \\ 0
+\end{bmatrix}\]
+
+\begin{verbatim}
+Xnueva<-cbind(rbind(t(X)%*%X,r1,r2),c(r1,0,0),c(r2,0,0))
+Xnueva
+ec_3<-rbind(t(X)%*%Y,0,0)
+ec_3
+beta2<-solve(Xnueva)%*%ec_3
+beta2
+\end{verbatim}
+
+\begin{equation*}
+\begin{bmatrix}
+X^tX & P\\
+P^t & 0 
+\end{bmatrix}
+=\begin{bmatrix}
+8&3&2&3&2&1&3&2&0&0\\
+3&3&0&0&1&0&1&1&1&0\\
+2&0&2&0&0&0&1&1&1&0\\
+3&0&0&3&1&1&1&0&1&0\\
+2&1&0&1&2&0&0&0&0&1\\
+1&0&0&1&0&1&0&0&0&1\\
+3&1&1&1&0&0&3&0&0&1\\
+2&1&1&0&0&0&0&2&0&1\\
+0&1&1&1&0&0&0&0&0&0\\
+0&0&0&0&1&1&1&1&0&0
+\end{bmatrix}\qquad
+\begin{bmatrix}
+X^t\underline{y} \\ 0
+\end{bmatrix}
+=\begin{bmatrix}
+135\\
+66\\
+17\\
+52\\
+33\\
+15\\
+46\\
+41\\
+0\\
+0\\
+\end{bmatrix}
+\end{equation*}
+
+Vector de estimadores del modelo:\\
+\[\begin{bmatrix}
+\underline{\beta} \\ \underline{\theta} 
+\end{bmatrix}=\begin{bmatrix}
+1.48\\ 5.47\\ -10.73\\ 5.27\\ -3.70\\ -5.10\\ 0.50\\ 8.30\\0\\0
+\end{bmatrix}\]
+
+    \item[e)] Reparametrizar el modelo ($Y = X\beta + \epsilon$) a ($Y = W\theta + \epsilon$) mediante variables ficticias (dummy). Escriba $W$ y obtenga el rango de $W$, encuentre $\hat{\theta} = {\left({W}^{t}W\right)}^{-1}{W}^{t}y$. Identifique la relación de $\theta$ con $\beta$ (use el hecho de que $W\theta = X\beta$).\\
+    
+\begin{verbatim}
+> #-e---Reparametrizar el modelo y Escriba W, R(W) y encuentra theta
+> #identifique relación de tetha con beta
+> # Modelo de regresión lineal
+> lm1 <- lm(Respuesta ~ A+B, data = Datos)
+> # MAtrix con las variables reparametrizadas (Variables Dummy)
+> W <- as.matrix(model.matrix(lm1))
+> dim(W)
+[1] 8 6
+#Rango de W
+> R(W)
+[1] 6
+> # parámetros usando la matriz reparametrizada
+> theta <- solve(t(W)%*%W)%*%t(W)%*%Y
+\end{verbatim}  
+
+$W=\begin{bmatrix}
+1 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 1 & 0 \\
+1 & 0 & 0 & 0 & 0 & 1 \\
+1 & 1 & 0 & 0 & 1 & 0 \\
+1 & 1 & 0 & 0 & 0 & 1 \\
+1 & 0 & 1 & 0 & 0 & 0 \\
+1 & 0 & 1 & 1 & 0 & 0 \\
+1 & 0 & 1 & 0 & 1 & 0
+\end{bmatrix},\qquad
+\hat{\theta}=\begin{bmatrix}
+16.6 \\ -16.2 \\ -0.2 \\ -1.4 \\ 4.2 \\ 12 
+\end{bmatrix}
+$
+
+
+El rango de $W=6$, por tanto es de rango completo.\\
+
+
+Relación de $\theta$ con $\beta$, usando $(W^tW)^{-1}W^tX$:
+\begin{verbatim}
+theta_Rel<-round(solve(t(W)%*%W)%*%t(W)%*%X,1)
+theta_Rel
+\end{verbatim}
+
+\[
+\begin{bmatrix}
+\theta_0 \\ \theta_1 \\ \theta_2 \\ \theta_3 \\ \theta_4 \\ \theta_5
+\end{bmatrix}=
+\begin{bmatrix}
+1 & 1 & 0 & 0 & 1 & 0 & 0 & 0 \\
+0 & -1 & 1 & 0 & 0 & 0 & 0 & 0 \\
+0 & -1 & 0 & 1 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & -1 & 1 & 0 & 0 \\
+0 & 0 & 0 & 0 & -1 & 0 & 1 & 0 \\
+0 & 0 & 0 & 0 & -1 & 0 & 0 & 1
+\end{bmatrix}
+\begin{bmatrix}
+\mu \\ \alpha_1 \\ \alpha_2 \\ \alpha_3 \\ \beta_1 \\ \beta_2 \\ \beta_3 \\ \beta_4
+\end{bmatrix} = 
+\begin{bmatrix}
+\mu +\alpha_1 + \beta_1\\ \alpha_2 - \alpha_1 \\ \alpha_3 - \alpha_1 \\ \beta_2 - \beta_1 \\ \beta_3 - \beta_1 \\ \beta_4 - \beta_1
+\end{bmatrix}
+\]
+    
+ \newpage 
+
+    \item[f)] ¿Cuál es el número de combinaciones lineales estimables básicas linealmente independientes ? (tip vea la dimensión de $\theta$ o el rango de $W$). Especificar un conjnto de funciones lineales estimables que forman una base para el espacio de todas las funciones lineales estimables para este modelo. (tip use la matriz Echelon).\\
+ 
+Dado que el rango de $W=6$, entonces tenemos que el número de combinaciones lineales estimables básicas linealmente independientes es 6.\\
+
+\begin{verbatim}
+#Matriz Echelon
+echelon(X)
+     (Intercept) A1 A2 A3 B1 B2 B3 B4
+[1,]           1  0  0  1  0  0  0  1
+[2,]           0  1  0 -1  0  0  0  0
+[3,]           0  0  1 -1  0  0  0  0
+[4,]           0  0  0  0  1  0  0 -1
+[5,]           0  0  0  0  0  1  0 -1
+[6,]           0  0  0  0  0  0  1 -1
+[7,]           0  0  0  0  0  0  0  0
+[8,]           0  0  0  0  0  0  0  0
+\end{verbatim}
+
+Las combinaciones lineales estimables básicas linealmente independientes son:\\
+
+\begin{eqnarray*}
+\lambda_1^t\beta &=& \mu + \alpha_3 + \beta_4\\
+\lambda_2^t\beta &=& \alpha_1 - \alpha_3\\
+\lambda_3^t\beta &=& \alpha_2 - \alpha_3\\
+\lambda_4^t\beta &=& \beta_1 - \beta_4\\
+\lambda_5^t\beta &=& \beta_2 - \beta_4\\
+\lambda_6^t\beta &=& \beta_3 - \beta_4\\
+\end{eqnarray*}
+
+
+    \item[g)] ¿Es estimable ${\mu}_{12} = \mu + {\alpha}_{1} + {\beta}_{2}$ ? ¿Por qué o por qué no?\\
+    
+Se sabe que $R(X)=R\begin{bmatrix} X \\ \lambda^t
+\end{bmatrix}=6$, entonces es estimable\\
+
+\begin{verbatim}
+> lambda<-c(1,1,0,0,0,1,0,0)
+> X_lam<-rbind(X,lambda)
+> R(X)
+[1] 6
+> R(X_lam)
+[1] 6
+\end{verbatim} 
+$\mu_{12} = \mu + {\alpha}_{1} + {\beta}_{2} =\lambda^t \beta=
+[1 \quad 1 \quad 0 \quad 0 \quad 0 \quad 1 \quad 0 \quad 0] 
+\begin{bmatrix}
+\mu \\ \alpha_1 \\ \alpha_2 \\ \alpha_3 \\ \beta_1 \\ \beta_2 \\ \beta_3 \\ \beta_4
+\end{bmatrix}$
+\newpage
+    \item[h)] Demuestre que $\displaystyle \frac{1}{4}\sum_{j = 1}^{4}{(\mu + {\alpha}_{i} + {\beta}_{j})}$ es estimable para $i = 1,2,3$ y encuentre un estimador.
+\end{enumerate}
+
+\begin{eqnarray*}
+\lambda_i^t \beta &=& \displaystyle \frac{1}{4}\sum_{j = 1}^{4}{(\mu + {\alpha}_{i} + {\beta}_{j})} \\
+&=&\mu + \alpha_i + \frac{1}{4}\sum_{j = 1}^{4}\beta_{j}\\
+&=& \mu + \alpha_i + \frac{1}{4}\beta_1 + \frac{1}{4}\beta_2 + \frac{1}{4}\beta_3 + \frac{1}{4}\beta_4.
+\end{eqnarray*}
+Las ecuaciones quedan de la siguiente manera.\\
+
+\begin{eqnarray*}
+\lambda_1^t \beta 
+&=& \mu + \alpha_1 + \frac{1}{4}\beta_1 + \frac{1}{4}\beta_2 + \frac{1}{4}\beta_3 + \frac{1}{4}\beta_4 =[1 \quad 1 \quad 0 \quad 0 \quad 1/4 \quad 1/4 \quad 1/4 \quad 1/4] 
+\begin{bmatrix}
+\mu \\ \alpha_1 \\ \alpha_2 \\ \alpha_3 \\ \beta_1 \\ \beta_2 \\ \beta_3 \\ \beta_4
+\end{bmatrix}\\
+\lambda_2^t \beta 
+&=& \mu + \alpha_2 + \frac{1}{4}\beta_1 + \frac{1}{4}\beta_2 + \frac{1}{4}\beta_3 + \frac{1}{4}\beta_4 =[1 \quad 0 \quad 1 \quad 0 \quad 1/4 \quad 1/4 \quad 1/4 \quad 1/4] 
+\begin{bmatrix}
+\mu \\ \alpha_1 \\ \alpha_2 \\ \alpha_3 \\ \beta_1 \\ \beta_2 \\ \beta_3 \\ \beta_4
+\end{bmatrix}\\
+\lambda_3^t \beta 
+&=& \mu + \alpha_3 + \frac{1}{4}\beta_1 + \frac{1}{4}\beta_2 + \frac{1}{4}\beta_3 + \frac{1}{4}\beta_4 =[1 \quad 0 \quad 0 \quad 1 \quad 1/4 \quad 1/4 \quad 1/4 \quad 1/4] 
+\begin{bmatrix}
+\mu \\ \alpha_1 \\ \alpha_2 \\ \alpha_3 \\ \beta_1 \\ \beta_2 \\ \beta_3 \\ \beta_4
+\end{bmatrix}\\
+\end{eqnarray*}
+
+Se debe cumplir que:\\
+\[R\begin{bmatrix} X \\ \lambda_1^t
+\end{bmatrix} = R\begin{bmatrix} X \\ \lambda_2^t
+\end{bmatrix} = R\begin{bmatrix} X \\ \lambda_3^t
+\end{bmatrix} = 6 = R(X),\]
+
+\begin{verbatim}
+> lambda1<-c(1,1,0,0,1/4,1/4,1/4,1/4)
+> X_lam1<-rbind(X,lambda1)
+> R(X_lam1)
+[1] 6
+> #Es estimable
+> lambda2<-c(1,0,1,0,1/4,1/4,1/4,1/4)
+> X_lam2<-rbind(X,lambda2)
+> R(X_lam2)
+[1] 6
+> #Es estimable
+> lambda3<-c(1,0,0,1,1/4,1/4,1/4,1/4)
+> X_lam3<-rbind(X,lambda3)
+> R(X_lam3)
+[1] 6
+> #Es estimable
+> #Estimadores
+> est1<-lambda1%*%beta1
+> est1
+     [,1]
+[1,] 20.3
+> est2<-lambda2%*%beta1
+> est2
+     [,1]
+[1,]  4.1
+> est3<-lambda3%*%beta1
+> est3
+     [,1]
+[1,] 20.1
+\end{verbatim}
+
+
+
+
+%------------EJERCICIO 2-----------
+%-----------------------------
+\paragraph{Problema 2} La siguiente tabla enumera los rendimientos cuando se probaron cinco variedades de plantas y cuatro fertilizantes. 
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lcccccccccc}
+\hline \hline 
+& & \multicolumn{9}{c}{Variedad} \\ \hline
+\multicolumn{2}{l}{Fertilizador} & $\mathbf{1}$ & & $\mathbf{2}$ & & $\mathbf{3}$ & & $\mathbf{4}$ & & $\mathbf{5}$ \\
+$\mathbf{1}$ & & 57 & & 26 & & 39 & &  23 & & 48 \\
+& & 46 & & 38 & & --- & & 36 & & 35 \\
+& & --- & & 20 & & --- & & 18 & & --- \\
+$\mathbf{2}$ & & 67 & & 44 & & 57 & & 74 & & 61 \\
+& & 72 & &  68 & & 61 & & 47 & & --- \\
+& & 66 & & 64 & & --- & & 69 & & --- \\
+$\mathbf{3}$ & & 95 & & 92 & & 91 & & 98 & & 78 \\
+& & 90 & & 89 & & 82 & & 85 & & 89 \\
+& & 89 & & --- & & --- & & --- & & 95 \\
+$\mathbf{4}$ & & 92 & & 96 & & 98 & & 99 & & 99 \\
+& & 88 & & 95 & & 93 & & 90 & & --- \\
+& & --- & & --- & & 98 & & 98 & & --- \\ 
+\hline \hline
+    \end{tabular}
+    \caption{Rendimiento de cinco variedades de plantas tratadas con cuatro fertilizantes}
+    \label{tab2P2}
+\end{table}
+\begin{enumerate}
+    \item[1.] Escriba el modelo \emph{anova de dos vías con interacción} para modelar estos datos.\\
+%----------------SOLICION------------------ 
+$Y_{ijk}=\mu +\alpha_{i} + \beta_{j} +\gamma_{ij}+ \epsilon_{ijk}$   
+    
+    
+    \item[2.] Encuentre la matriz de diseño\\
+
+\begin{verbatim}
+X1 <- ModelMatrix(rendimiento ~ fertilizante + variedad + fertilizante*variedad, Datos)
+X <- X1$X
+X
+\end{verbatim}
+
+$X=\begin{bmatrix}
+1 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\
+1 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+1 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+1 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1
+\end{bmatrix}$
+
+
+    
+    \item[3.] Escriba las ecuaciones normales
+ 
+$X^{t}X\beta=X^{t}Y$ \\
+
+\begin{verbatim}
+#----------3 Ecuanciones normales-----
+t(X)%*%X
+Y <- Datos$rendimiento
+t(X)%*%Y
+\end{verbatim}
+$X^{t}X=$\\
+
+$\begin{bmatrix}
+46&11&12&12&11&10&10&8&11&7&2&3&1&3&2&3&3&2&3&1&3&2&2&2&3&2&2&3&3&1&\\
+11&11&0&0&0&2&3&1&3&2&2&3&1&3&2&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&\\
+12&0&12&0&0&3&3&2&3&1&0&0&0&0&0&3&3&2&3&1&0&0&0&0&0&0&0&0&0&0&\\
+12&0&0&12&0&3&2&2&2&3&0&0&0&0&0&0&0&0&0&0&3&2&2&2&3&0&0&0&0&0&\\
+11&0&0&0&11&2&2&3&3&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&2&2&3&3&1&\\
+10&2&3&3&2&10&0&0&0&0&2&0&0&0&0&3&0&0&0&0&3&0&0&0&0&2&0&0&0&0&\\
+10&3&3&2&2&0&10&0&0&0&0&3&0&0&0&0&3&0&0&0&0&2&0&0&0&0&2&0&0&0&\\
+8&1&2&2&3&0&0&8&0&0&0&0&1&0&0&0&0&2&0&0&0&0&2&0&0&0&0&3&0&0&\\
+11&3&3&2&3&0&0&0&11&0&0&0&0&3&0&0&0&0&3&0&0&0&0&2&0&0&0&0&3&0&\\
+7&2&1&3&1&0&0&0&0&7&0&0&0&0&2&0&0&0&0&1&0&0&0&0&3&0&0&0&0&1&\\
+2&2&0&0&0&2&0&0&0&0&2&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&\\
+3&3&0&0&0&0&3&0&0&0&0&3&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&\\
+1&1&0&0&0&0&0&1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&\\
+3&3&0&0&0&0&0&0&3&0&0&0&0&3&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&\\
+2&2&0&0&0&0&0&0&0&2&0&0&0&0&2&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&\\
+3&0&3&0&0&3&0&0&0&0&0&0&0&0&0&3&0&0&0&0&0&0&0&0&0&0&0&0&0&0&\\
+3&0&3&0&0&0&3&0&0&0&0&0&0&0&0&0&3&0&0&0&0&0&0&0&0&0&0&0&0&0&\\
+2&0&2&0&0&0&0&2&0&0&0&0&0&0&0&0&0&2&0&0&0&0&0&0&0&0&0&0&0&0&\\
+3&0&3&0&0&0&0&0&3&0&0&0&0&0&0&0&0&0&3&0&0&0&0&0&0&0&0&0&0&0&\\
+1&0&1&0&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&\\
+3&0&0&3&0&3&0&0&0&0&0&0&0&0&0&0&0&0&0&0&3&0&0&0&0&0&0&0&0&0&\\
+2&0&0&2&0&0&2&0&0&0&0&0&0&0&0&0&0&0&0&0&0&2&0&0&0&0&0&0&0&0&\\
+2&0&0&2&0&0&0&2&0&0&0&0&0&0&0&0&0&0&0&0&0&0&2&0&0&0&0&0&0&0&\\
+2&0&0&2&0&0&0&0&2&0&0&0&0&0&0&0&0&0&0&0&0&0&0&2&0&0&0&0&0&0&\\
+3&0&0&3&0&0&0&0&0&3&0&0&0&0&0&0&0&0&0&0&0&0&0&0&3&0&0&0&0&0&\\
+2&0&0&0&2&2&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&2&0&0&0&0&\\
+2&0&0&0&2&0&2&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&2&0&0&0&\\
+3&0&0&0&3&0&0&3&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&3&0&0&\\
+3&0&0&0&3&0&0&0&3&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&3&0&\\
+1&0&0&0&1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&1&\\
+\end{bmatrix}$
+    
+    $\beta=\begin{bmatrix}
+\mu \\
+\alpha_{1}\\
+\alpha_{2}\\
+\alpha_{3}\\
+\alpha_{4}\\
+\beta_{1}\\
+\beta_{2}\\
+\beta_{3}\\
+\beta_{4}\\
+\beta_{5}\\
+\gamma_{11}\\
+\gamma_{12}\\
+\gamma_{13}\\
+\gamma_{14}\\
+\gamma_{15}\\
+\gamma_{21}\\
+\gamma_{22}\\
+\gamma_{23}\\
+\gamma_{24}\\
+\gamma_{25}\\
+\gamma_{31}\\
+\gamma_{32}\\
+\gamma_{33}\\
+\gamma_{34}\\
+\gamma_{35}\\
+\gamma_{41}\\
+\gamma_{42}\\
+\gamma_{43}\\
+\gamma_{44}\\
+\gamma_{45}\\
+\end{bmatrix}\qquad$  
+$X^{t}Y=\begin{bmatrix}
+3255\\
+386\\
+750\\
+1073\\
+1046\\
+762\\
+632\\
+619\\
+737\\
+505\\
+103\\
+84\\
+39\\
+77\\
+83\\
+205\\
+176\\
+118\\
+190\\
+61\\
+274\\
+181\\
+173\\
+183\\
+262\\
+180\\
+191\\
+289\\
+287\\
+99\\
+\end{bmatrix}$
+
+
+
+    \item[4.] Resuelva la ecuación normal usando inversa generalizada de $({X}^{t}X)$.\\
+Vector de parámetros estimados usando inversa generalizada de $X^{t}X$\\
+
+\begin{verbatim}
+# Vector de parámetros estimados usando inversa generalizada
+beta1 <- Ginv(t(X)%*%X)%*%t(X)%*%Y
+beta1
+\end{verbatim}
+
+$\hat{\beta}=\begin{bmatrix}
+99.0000000\\
+-57.5000000\\
+-38.0000000\\
+-11.6666675\\
+0.0000000\\
+-9.0000000\\
+-3.5000000\\
+-2.6666676\\
+-3.3333343\\
+0.0000000\\
+19.0000000\\
+-10.0000003\\
+0.1666676\\
+-12.4999985\\
+0.0000000\\
+16.3333327\\
+1.1666661\\
+0.6666676\\
+5.6666689\\
+0.0000000\\
+13.0000027\\
+6.6666675\\
+1.8333323\\
+7.5000022\\
+0.0000000\\
+0.0000000\\
+0.0000000\\
+0.0000000\\
+0.0000000\\
+0.0000000
+\end{bmatrix}$
+    
+    
+    \item[5.] Reparametrizar el modelo ($Y = X\beta + \epsilon$) a ($Y = W\theta + \epsilon$) mediante variables ficticias (dummy). Escriba $W$ y encuentre $\hat{\theta} = {\left({W}^{t}W\right)}^{-1}{W}^{t}y$. \\
+\begin{verbatim}
+#--Reparametrizar el modelo y Escriba W y encuentra theta
+# Modelo de regresión lineal con interacción
+lm1 <- lm(rendimiento ~ fertilizante + variedad + fertilizante*variedad, data = Datos)
+summary(lm1)
+# MAtrix con las variables reparametrizadas (Variables Dummy)
+W <- as.matrix(model.matrix(lm1))
+dim(W)
+# parámetros usando la matriz reparametrizada
+theta <- solve(t(W)%*%W)%*%t(W)%*%Y
+theta
+
+# Valores predichos 
+Yhat2 <- W%*%theta
+Yhat2
+\end{verbatim} 
+    
+$W=\begin{bmatrix}
+1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&1&0&0&1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0\\
+1&1&0&0&1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0\\
+1&1&0&0&1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0\\
+1&1&0&0&0&1&0&0&0&0&0&1&0&0&0&0&0&0&0&0\\
+1&1&0&0&0&1&0&0&0&0&0&1&0&0&0&0&0&0&0&0\\
+1&1&0&0&0&0&1&0&0&0&0&0&0&0&1&0&0&0&0&0\\
+1&1&0&0&0&0&1&0&0&0&0&0&0&0&1&0&0&0&0&0\\
+1&1&0&0&0&0&1&0&0&0&0&0&0&0&1&0&0&0&0&0\\
+1&1&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0&1&0&0\\
+1&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&1&0&1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0\\
+1&0&1&0&1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0\\
+1&0&1&0&0&1&0&0&0&0&0&0&1&0&0&0&0&0&0&0\\
+1&0&1&0&0&1&0&0&0&0&0&0&1&0&0&0&0&0&0&0\\
+1&0&1&0&0&0&1&0&0&0&0&0&0&0&0&1&0&0&0&0\\
+1&0&1&0&0&0&1&0&0&0&0&0&0&0&0&1&0&0&0&0\\
+1&0&1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&1&0\\
+1&0&1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&1&0\\
+1&0&1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&1&0\\
+1&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&1&1&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0\\
+1&0&0&1&1&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0\\
+1&0&0&1&0&1&0&0&0&0&0&0&0&1&0&0&0&0&0&0\\
+1&0&0&1&0&1&0&0&0&0&0&0&0&1&0&0&0&0&0&0\\
+1&0&0&1&0&1&0&0&0&0&0&0&0&1&0&0&0&0&0&0\\
+1&0&0&1&0&0&1&0&0&0&0&0&0&0&0&0&1&0&0&0\\
+1&0&0&1&0&0&1&0&0&0&0&0&0&0&0&0&1&0&0&0\\
+1&0&0&1&0&0&1&0&0&0&0&0&0&0&0&0&1&0&0&0\\
+1&0&0&1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&1\\
+\end{bmatrix}$
+
+$\hat{\theta}=\begin{bmatrix}
+51.500000\\
+16.833333\\
+39.833333\\
+38.500000\\
+-23.500000\\
+-12.500000\\
+-25.833333\\
+-10.000000\\
+13.833333\\
+22.666667\\
+29.000000\\
+3.166667\\
+7.666667\\
+18.833333\\
+20.833333\\
+26.000000\\
+31.500000\\
+2.666667\\
+6.000000\\
+19.000000
+\end{bmatrix}$\\
+
+
+
+
+    \item[6.] Encuentre otra reparametrización y encuentre $W$ utilizando el modelo de celdas medias.\\
+
+\begin{verbatim}
+lm2 <- lm(rendimiento ~ 0+ fertilizante + variedad + fertilizante*variedad, data = Datos)
+summary(lm2)
+W2 <- as.matrix(model.matrix(lm2))
+W2
+
+theta2 <- solve(t(W2)%*%W2)%*%t(W2)%*%Y
+theta2
+\end{verbatim}
+
+
+$W_{2}=\begin{bmatrix}
+1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0\\
+1&0&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0\\
+0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+0&1&0&0&1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0\\
+0&1&0&0&1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0\\
+0&1&0&0&1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0\\
+0&1&0&0&0&1&0&0&0&0&0&1&0&0&0&0&0&0&0&0\\
+0&1&0&0&0&1&0&0&0&0&0&1&0&0&0&0&0&0&0&0\\
+0&1&0&0&0&0&1&0&0&0&0&0&0&0&1&0&0&0&0&0\\
+0&1&0&0&0&0&1&0&0&0&0&0&0&0&1&0&0&0&0&0\\
+0&1&0&0&0&0&1&0&0&0&0&0&0&0&1&0&0&0&0&0\\
+0&1&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0&1&0&0\\
+0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+0&0&1&0&1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0\\
+0&0&1&0&1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0\\
+0&0&1&0&0&1&0&0&0&0&0&0&1&0&0&0&0&0&0&0\\
+0&0&1&0&0&1&0&0&0&0&0&0&1&0&0&0&0&0&0&0\\
+0&0&1&0&0&0&1&0&0&0&0&0&0&0&0&1&0&0&0&0\\
+0&0&1&0&0&0&1&0&0&0&0&0&0&0&0&1&0&0&0&0\\
+0&0&1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&1&0\\
+0&0&1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&1&0\\
+0&0&1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&1&0\\
+0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0\\
+0&0&0&1&1&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0\\
+0&0&0&1&1&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0\\
+0&0&0&1&0&1&0&0&0&0&0&0&0&1&0&0&0&0&0&0\\
+0&0&0&1&0&1&0&0&0&0&0&0&0&1&0&0&0&0&0&0\\
+0&0&0&1&0&1&0&0&0&0&0&0&0&1&0&0&0&0&0&0\\
+0&0&0&1&0&0&1&0&0&0&0&0&0&0&0&0&1&0&0&0\\
+0&0&0&1&0&0&1&0&0&0&0&0&0&0&0&0&1&0&0&0\\
+0&0&0&1&0&0&1&0&0&0&0&0&0&0&0&0&1&0&0&0\\
+0&0&0&1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&1\\
+\end{bmatrix}$
+$\hat{\theta_{2}}=\begin{bmatrix}
+51.500000\\
+68.333333\\
+91.333333\\
+90.000000\\
+-23.500000\\
+-12.500000\\
+-25.833333\\
+-10.000000\\
+13.833333\\
+22.666667\\
+29.000000\\
+3.166667\\
+7.666667\\
+18.833333\\
+20.833333\\
+26.000000\\
+31.5.00000\\
+2.666667\\
+6.000000\\
+19.000000\\
+\end{bmatrix}$
+    
+    
+    \item[7.] Para reparametrización con dummy indicar la relación de $\beta$ con $\theta$. (es decir $\theta = {\left({W}^{t}W\right)}^{-1}{W}^{t}X \beta $). Es decir, encuentre $L = {\left({W}^{t}W\right)}^{-1}{W}^{t}X $ y explique las combinaciones lineales.\\
+    
+\begin{tiny}   
+$L=\begin{bmatrix}
+1&1&0&0&0&1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&\\
+0&-1&1&0&0&0&0&0&0&0&-1&0&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&\\
+0&-1&0&1&0&0&0&0&0&0&-1&0&0&0&0&0&0&0&0&0&1&0&0&0&0&0&0&0&0&0&\\
+0&-1&0&0&1&0&0&0&0&0&-1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&1&0&0&0&0&\\
+0&0&0&0&0&-1&1&0&0&0&-1&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&\\
+0&0&0&0&0&-1&0&1&0&0&-1&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&\\
+0&0&0&0&0&-1&0&0&1&0&-1&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&\\
+0&0&0&0&0&-1&0&0&0&1&-1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&0&0&0&0&0&\\
+0&0&0&0&0&0&0&0&0&0&1&-1&0&0&0&-1&1&0&0&0&0&0&0&0&0&0&0&0&0&0&\\
+0&0&0&0&0&0&0&0&0&0&1&-1&0&0&0&0&0&0&0&0&-1&1&0&0&0&0&0&0&0&0&\\
+0&0&0&0&0&0&0&0&0&0&1&-1&0&0&0&0&0&0&0&0&0&0&0&0&0&-1&1&0&0&0&\\
+0&0&0&0&0&0&0&0&0&0&1&0&-1&0&0&-1&0&1&0&0&0&0&0&0&0&0&0&0&0&0&\\
+0&0&0&0&0&0&0&0&0&0&1&0&-1&0&0&0&0&0&0&0&-1&0&1&0&0&0&0&0&0&0&\\
+0&0&0&0&0&0&0&0&0&0&1&0&-1&0&0&0&0&0&0&0&0&0&0&0&0&-1&0&1&0&0&\\
+0&0&0&0&0&0&0&0&0&0&1&0&0&-1&0&-1&0&0&1&0&0&0&0&0&0&0&0&0&0&0&\\
+0&0&0&0&0&0&0&0&0&0&1&0&0&-1&0&0&0&0&0&0&-1&0&0&1&0&0&0&0&0&0&\\
+0&0&0&0&0&0&0&0&0&0&1&0&0&-1&0&0&0&0&0&0&0&0&0&0&0&-1&0&0&1&0&\\
+0&0&0&0&0&0&0&0&0&0&1&0&0&0&-1&-1&0&0&0&1&0&0&0&0&0&0&0&0&0&0&\\
+0&0&0&0&0&0&0&0&0&0&1&0&0&0&-1&0&0&0&0&0&-1&0&0&0&1&0&0&0&0&0&\\
+0&0&0&0&0&0&0&0&0&0&1&0&0&0&-1&0&0&0&0&0&0&0&0&0&0&-1&0&0&0&1&\\
+\end{bmatrix}$
+\end{tiny} \\
+
+$\hat{\theta}= L\hat{\beta}=\begin{bmatrix}
+\mu+\alpha_{1}+\beta_{1}+\gamma_{11}\\
+-\alpha_{1}+\alpha_{2}-\gamma_{11}+\gamma_{21}\\
+-\alpha_{1}+\alpha_{3}-\gamma_{11}+\gamma_{31}\\
+-\alpha_{1}+\alpha_{4}-\gamma_{11}+\gamma_{41}\\
+-\beta_{1}+\beta_{2}-\gamma_{11}+\gamma_{12}\\
+-\beta_{1}+\beta_{3}-\gamma_{11}+\gamma_{13}\\
+-\beta_{1}+\beta_{4}-\gamma_{11}+\gamma_{14}\\
+-\beta_{1}+\beta_{5}-\gamma_{11}+\gamma_{15}\\
+\gamma_{11}-\gamma_{12}-\gamma_{21}+\gamma_{22}\\
+\gamma_{11}-\gamma_{12}-\gamma_{31}+\gamma_{32}\\
+\gamma_{11}-\gamma_{12}-\gamma_{41}+\gamma_{42}\\
+\gamma_{11}-\gamma_{13}-\gamma_{21}+\gamma_{23}\\
+\gamma_{11}-\gamma_{13}-\gamma_{31}+\gamma_{33}\\
+\gamma_{11}-\gamma_{13}-\gamma_{41}+\gamma_{43}\\
+\gamma_{11}-\gamma_{14}-\gamma_{21}+\gamma_{24}\\
+\gamma_{11}-\gamma_{14}-\gamma_{31}+\gamma_{34}\\
+\gamma_{11}-\gamma_{14}-\gamma_{41}+\gamma_{44}\\
+\gamma_{11}-\gamma_{15}-\gamma_{21}+\gamma_{25}\\
+\gamma_{11}-\gamma_{15}-\gamma_{31}+\gamma_{35}\\
+\gamma_{11}-\gamma_{15}-\gamma_{41}+\gamma_{45}\\
+\end{bmatrix}$
+    \item[8.] Para cada solución, realice una predicción y compare.
+
+\begin{verbatim}
+#inversa generalizada
+Yhat1 <- X%*%beta1
+Yhat1
+#variables dummy
+Yhat2 <- W%*%theta
+Yhat2
+#celdas medias
+Yhat3 <- W2%*%theta2
+Yhat3
+estimados<-cbind(Yhat1,Yhat2,Yhat3)
+\end{verbatim}
+
+\begin{tabular}{| c | c | c |}
+\hline
+Y inversa generalizado & Y con dummy & Y3 celdas medias\\ \hline
+51.50000&51.50000&51.50000\\
+51.50000&51.50000&51.50000\\
+28.00000&28.00000&28.00000\\
+28.00000&28.00000&28.00000\\
+28.00000&28.00000&28.00000\\
+39.00000&39.00000&39.00000\\
+25.66667&25.66667&25.66667\\
+25.66667&25.66667&25.66667\\
+25.66667&25.66667&25.66667\\
+41.50000&41.50000&41.50000\\
+41.50000&41.50000&41.50000\\
+68.33333&68.33333&68.33333\\
+68.33333&68.33333&68.33333\\
+68.33333&68.33333&68.33333\\
+58.66667&58.66667&58.66667\\
+58.66667&58.66667&58.66667\\
+58.66667&58.66667&58.66667\\
+59.00000&59.00000&59.00000\\
+59.00000&59.00000&59.00000\\
+63.33333&63.33333&63.33333\\
+63.33333&63.33333&63.33333\\
+63.33333&63.33333&63.33333\\
+61.00000&61.00000&61.00000\\
+91.33334&91.33333&91.33333\\
+91.33334&91.33333&91.33333\\
+91.33334&91.33333&91.33333\\
+90.50000&90.50000&90.50000\\
+90.50000&90.50000&90.50000\\
+86.50000&86.50000&86.50000\\
+86.50000&86.50000&86.50000\\
+91.50000&91.50000&91.50000\\
+91.50000&91.50000&91.50000\\
+87.33333&87.33333&87.33333\\
+87.33333&87.33333&87.33333\\
+87.33333&87.33333&87.33333\\
+90.00000&90.00000&90.00000\\
+90.00000&90.00000&90.00000\\
+95.50000&95.50000&95.50000\\
+95.50000&95.50000&95.50000\\
+96.33333&96.33333&96.33333\\
+96.33333&96.33333&96.33333\\
+96.33333&96.33333&96.33333\\
+95.66667&95.66667&95.66667\\
+95.66667&95.66667&95.66667\\
+95.66667&95.66667&95.66667\\
+99.00000&99.00000&99.00000\\
+\hline
+\end{tabular}
+\\
+%-----------EJERCICIO 3------------
+%----------------------------------
+
+\paragraph{Problema 3} En una prueba de alimentación de pollos de engorda, se probaron cinco suplementos proteicos. Los pesos finales a las 6 semanas se dan en la Tabla (Snedecor 1948, p.
+214).\\
+
+Protein Supplement.
+
+\begin{tabular}{| c | c | c | c | c |}
+\hline
+Linseed & Soybean & Sunf lower & Meat & Casein\\ \hline
+309& 243& 423& 325& 368\\
+229& 230& 340& 257& 390\\
+181& 248& 392& 303& 379\\
+141& 327& 339& 315& 260\\
+260& 329& 341& 380& 404\\
+203& 250& 226& 153& 318\\
+148& 193& 320& 263& 352\\
+169& 271& 295& 242& 359\\
+213& 316& 334& 206& 216\\
+257& 267& 322& 344& 222\\
+244& 199& 297& 258& 283\\
+271& 177& 318& &   332\\
+&    158&      &  &\\
+&     248 &   &    &\\
+\hline
+\end{tabular}
+
+Final Weights (g) of Chicks at 6 Weeks
+
+
+\begin{enumerate}
+\item Para Comparar los suplementos proteicos se proponen los siguientes contrastes ortogonales (combinaciones lineales) cuyos coeficientes son:\\
+
+$\lambda_{1}^{t}=(0,3,-2,-2,-2,3)\quad \lambda_{2}^{t}=(0,0,1,-2,1,0) \quad \lambda_{3}^{t}=(0,0,1,0,-1,0)\quad \lambda_{4}^{t}=(0,1,0,0,0,-1)$\\
+	
+Indique que significa cada contraste en términos del problema. Pruebe si son estimables, si son estimables obtenga una estimación. \\
+			
+			
+Contraste 1. $\lambda_{1}^{t}=(0,3,-2,-2,-2,3)$. Compara los suplementos linaza caseina contra los suplementos soya, girasol, y carne.\\
+
+Contraste 2. $ \lambda_{2}^{t}=(0,0,1,-2,1,0)$. Compara los suplementos soya y carne contra el suplemento girasol.\\
+
+Contraste 3. $\lambda_{3}^{t}=(0,0,1,0,-1,0)$. Hace una comparación entre los suplementos soya vs carne.\\
+
+Contraste 4. $\lambda_{4}^{t}=(0,1,0,0,0,-1)$. Hace una comparación entre los suplementos linaza vs caseina. \\
+
+Se verifica si las combinaciones lineales son estimables.
+Se sabe que si el rango de la matriz es $n$ y el rango de la matriz aumentada sigue siendo $n$, la combinación lineal es estimable.\\
+
+\begin{verbatim}
+> datos$suplement<-as.factor(datos$suplement)
+> #Matriz X
+> model=ModelMatrix(peso~suplement,datos)
+> X=as.matrix(model$X)
+> dim(X) 
+[1] 61  6
+> #Rango de la matriz X
+> qr(X)$rank
+[1] 5
+> #Se construyen las lambas
+> lambda1<-c(0,3,-2,-2,-2,3)
+> lambda2<-c(0,0,1,-2,1,0)
+> lambda3<-c(0,0,1,0,-1,0)
+> lambda4<-c(0,1,0,0,0,-1)
+> #matrices aumentadas y rango
+> X1=rbind(X,t(lambda1))
+> qr(X1)$rank
+[1] 5
+> X2=rbind(X,t(lambda2))
+> qr(X2)$rank
+[1] 5
+> X3=rbind(X,t(lambda3))
+> qr(X3)$rank
+[1] 5
+> X4=rbind(X,t(lambda4))
+> qr(X4)$rank
+[1] 5
+\end{verbatim}
+Dado que el rango de la matriz $X$ es 5, entonces es estimable.\\
+
+\item Use sas o R para investigar estimabilidad directamente.\\
+
+\end{enumerate}
+\begin{verbatim}
+> Y=as.vector(datos$peso)
+> #Calcular estimadores usando inversa generalizada
+> beta_est=Ginv(t(X)%*%X)%*%t(X)%*%Y
+> beta_est
+            [,1]
+[1,]  328.916654
+[2,]   -5.333294
+[3,] -110.166636
+[4,]  -52.007565
+[5,]  -82.059516
+[6,]    0.000000
+> efecto_cuadratico_est_1=lambda1%*%beta_est
+> efecto_cuadratico_est_1
+         [,1]
+[1,] 472.4676
+> efecto_cuadratico_est_2=lambda2%*%beta_est
+> efecto_cuadratico_est_2
+          [,1]
+[1,] -88.21102
+> efecto_cuadratico_est_3=lambda3%*%beta_est
+> efecto_cuadratico_est_3
+          [,1]
+[1,] -28.10712
+> efecto_cuadratico_est_4=lambda4%*%beta_est
+> efecto_cuadratico_est_4
+          [,1]
+[1,] -5.333294
+\end{verbatim}
+
+%------------EJERCICIO 4-----------
+%--------------------------------
+\paragraph{Problema 4} Considere el modelo:
+\begin{align*}
+    {y}{1} &= {\tau}{1} + {\tau}{2} + {\tau}{3} + {\epsilon}_{1} \\
+    {y}{2} &= {\tau}{1} + {\tau}{3} + {\epsilon}{2} \\
+    {y}{3} &= {\tau}{2} + {\epsilon}_{3}
+\end{align*}
+\begin{enumerate}
+\item Escriba el modelo en forma matricial. ¿Cuál es el rango de la matriz diseño?
+ 
+\begin{align*}
+    \begin{bmatrix}
+     y_{1}\\ y_{2} \\ y_{3} 
+   \end{bmatrix}
+       = \begin{bmatrix}
+        1 &1 &1\\
+        1 &0 &1\\
+        0 &1 &0\\
+    \end{bmatrix}  \begin{bmatrix}
+        \tau_{1} \\ \tau_{2} \\ \tau_{3} \end{bmatrix} + \begin{bmatrix}
+   \epsilon_{1}\\  \epsilon_{2} \\  \epsilon_{3} \\    
+    \end{bmatrix}
+\end{align*}
+El rango de la matriz es 2. \\
+
+
+\item ¿Cuáles (si los hay) de los parámetros individuales son estimables?\\
+
+
+Si $R(X)$ es igual al rango de $R\begin{bmatrix} X\\ \lambda^t\end{bmatrix}$ entonces $\lambda\beta$ es estimable.\\ \\
+
+Para: \\
+\begin{align*}
+    &X=\begin{bmatrix}
+        1 &1 &1\\
+        1 &0 &1\\
+        0 &1 &0\\
+    \end{bmatrix}\\
+    &\textbf{Rango=2, , es estimable}
+\end{align*}
+Para $\tau_1$
+\begin{align*}
+&\begin{bmatrix} X\\ \lambda^t\end{bmatrix} =
+\begin{bmatrix}
+        1 &1 &1\\
+        1 &0 &1\\
+        0 &1 &0\\
+        1 &0 &0\\
+    \end{bmatrix}\\ &\textbf{Rango=3, no es estimable}
+\end{align*}\\
+
+Para $\tau_2$
+\begin{align*}
+&\begin{bmatrix} X\\ \lambda^t\end{bmatrix} =
+\begin{bmatrix}
+        1 &1 &1\\
+        1 &0 &1\\
+        0 &1 &0\\
+        0 &1 &0\\
+    \end{bmatrix}\\ &\textbf{Rango=2, es estimable}
+\end{align*}
+
+Para $\tau_3$
+\begin{align*}
+\begin{bmatrix} X\\ \lambda^t\end{bmatrix} & =
+\begin{bmatrix}
+        1 &1 &1\\
+        1 &0 &1\\
+        0 &1 &0\\
+        0 &0 &1\\
+    \end{bmatrix} \\ &\textbf{Rango=3, no es estimable}
+\end{align*}
+
+\item ¿Es estimable ${\tau} - 2{\tau}{2} + {\tau}_{3}$ ? Explica por qué.
+
+\begin{align*}
+\begin{bmatrix} X\\ \lambda^t\end{bmatrix} & =
+\begin{bmatrix}
+        1 &1 &1\\
+        1 &0 &1\\
+        0 &1 &0\\
+        1 &-2 &1\\
+    \end{bmatrix} \\ &\textbf{Rango=2, es estimable}
+\end{align*}
+El rango de la matriz $X$ y el rango de esta matriz es 2, por lo que es estimable.
+\end{enumerate}
+\end{enumerate}
+\end{document}
