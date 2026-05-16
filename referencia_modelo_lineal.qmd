@@ -1,0 +1,477 @@
+---
+title: "Referencia para Reproducir un Modelo Lineal Desde Cero"
+subtitle: "Regresion lineal multiple con `datos_5_ej5.csv`"
+author: "Material de estudio"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    self-contained: true
+    html-math-method: mathml
+    code-fold: false
+  pdf:
+    toc: true
+    number-sections: true
+    geometry:
+      - margin=1in
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Proposito
+
+Este documento fija un modelo de referencia ajustado con `lm()` para comparar contra una implementacion manual posterior, por ejemplo en C++/Rcpp. El objetivo no es usar `lm()` como metodo de calculo final, sino como patron numerico confiable para verificar coeficientes, residuos, sumas de cuadrados, estadisticos, intervalos, p-values, devianza y criterios de informacion.
+
+Usaremos un caso deliberadamente estandar: regresion lineal multiple con intercepto y cinco predictores numericos, sin factores ni interacciones.
+
+El modelo completo es:
+
+$$
+y_i =
+\beta_0 +
+\beta_1 x_{i1} +
+\beta_2 x_{i2} +
+\beta_3 x_{i3} +
+\beta_4 x_{i4} +
+\beta_5 x_{i5} +
+\varepsilon_i,
+\qquad
+\varepsilon_i \sim N(0,\sigma^2).
+$$
+
+## Datos
+
+```{r}
+datos <- read.csv("Clase/codes/datos_5_ej5.csv")
+str(datos)
+datos
+```
+
+```{r}
+summary(datos)
+```
+
+## Ajuste de Referencia con `lm()`
+
+```{r}
+modelo_ref <- lm(y ~ x1 + x2 + x3 + x4 + x5, data = datos)
+summary(modelo_ref)
+```
+
+La matriz de diseno que debera recibir la implementacion manual es:
+
+```{r}
+X <- model.matrix(modelo_ref)
+y <- model.response(model.frame(modelo_ref))
+
+n <- nrow(X)
+p <- ncol(X)
+df_res <- n - p
+
+list(
+  n = n,
+  p = p,
+  grados_libertad_residuales = df_res,
+  nombres_columnas_X = colnames(X)
+)
+```
+
+```{r}
+head(X)
+```
+
+## Coeficientes e Inferencia Individual
+
+La implementacion manual debe reproducir:
+
+$$
+\hat\beta = (X^\top X)^{-1}X^\top y.
+$$
+
+La matriz de varianzas estimada es:
+
+$$
+\widehat{\operatorname{Var}}(\hat\beta)
+  =
+\hat\sigma^2 (X^\top X)^{-1},
+\qquad
+\hat\sigma^2 =
+\frac{SSE}{n-p}.
+$$
+
+Para cada coeficiente:
+
+$$
+t_j =
+\frac{\hat\beta_j}{se(\hat\beta_j)},
+\qquad
+p_j =
+2P(T_{n-p} \ge |t_j|).
+$$
+
+```{r}
+coef_ref <- as.data.frame(summary(modelo_ref)$coefficients)
+coef_ref$termino <- rownames(coef_ref)
+rownames(coef_ref) <- NULL
+coef_ref <- coef_ref[, c("termino", "Estimate", "Std. Error", "t value", "Pr(>|t|)")]
+coef_ref
+```
+
+```{r}
+ic_ref <- as.data.frame(confint(modelo_ref, level = 0.95))
+ic_ref$termino <- rownames(ic_ref)
+rownames(ic_ref) <- NULL
+ic_ref <- ic_ref[, c("termino", "2.5 %", "97.5 %")]
+ic_ref
+```
+
+## Valores Ajustados y Residuos
+
+La implementacion manual debe reproducir:
+
+$$
+\hat y = X\hat\beta,
+\qquad
+e = y - \hat y.
+$$
+
+```{r}
+resumen_obs <- data.frame(
+  obs = seq_along(y),
+  y = y,
+  fitted = fitted(modelo_ref),
+  residual = resid(modelo_ref),
+  leverage = hatvalues(modelo_ref),
+  std_residual = rstandard(modelo_ref),
+  cooks_distance = cooks.distance(modelo_ref)
+)
+
+resumen_obs
+```
+
+```{r}
+summary(resid(modelo_ref))
+```
+
+## Sumas de Cuadrados
+
+Con intercepto, usamos sumas de cuadrados corregidas por la media:
+
+$$
+SST =
+\sum_{i=1}^n (y_i-\bar y)^2,
+\qquad
+SSE =
+\sum_{i=1}^n (y_i-\hat y_i)^2,
+\qquad
+SSR =
+\sum_{i=1}^n (\hat y_i-\bar y)^2.
+$$
+
+Tambien:
+
+$$
+SST = SSR + SSE.
+$$
+
+```{r}
+y_bar <- mean(y)
+y_hat <- fitted(modelo_ref)
+e <- resid(modelo_ref)
+
+SSE <- sum(e^2)
+SST <- sum((y - y_bar)^2)
+SSR <- sum((y_hat - y_bar)^2)
+
+MSE <- SSE / df_res
+MSR <- SSR / (p - 1)
+sigma_hat <- sqrt(MSE)
+
+ss_ref <- data.frame(
+  cantidad = c("SST", "SSR", "SSE", "MSR", "MSE", "sigma_hat"),
+  valor = c(SST, SSR, SSE, MSR, MSE, sigma_hat)
+)
+
+ss_ref
+```
+
+```{r}
+data.frame(
+  identidad = "SST - SSR - SSE",
+  valor = SST - SSR - SSE
+)
+```
+
+## R Cuadrada y Error Estandar Residual
+
+$$
+R^2 =
+1 - \frac{SSE}{SST},
+\qquad
+R^2_{adj}
+  =
+1 -
+\frac{SSE/(n-p)}{SST/(n-1)}.
+$$
+
+```{r}
+R2 <- 1 - SSE / SST
+R2_adj <- 1 - (SSE / df_res) / (SST / (n - 1))
+
+data.frame(
+  R2 = R2,
+  R2_ajustada = R2_adj,
+  sigma_hat = sigma_hat
+)
+```
+
+## Prueba F Global
+
+La prueba global contrasta:
+
+$$
+H_0:
+\beta_1 =
+\beta_2 =
+\beta_3 =
+\beta_4 =
+\beta_5 =
+0.
+$$
+
+contra la alternativa de que al menos un coeficiente de pendiente es distinto de cero.
+
+$$
+F =
+\frac{SSR/(p-1)}{SSE/(n-p)}
+  =
+\frac{MSR}{MSE}.
+$$
+
+```{r}
+F_global <- MSR / MSE
+p_F_global <- pf(F_global, df1 = p - 1, df2 = df_res, lower.tail = FALSE)
+
+data.frame(
+  estadistico_F = F_global,
+  gl_numerador = p - 1,
+  gl_denominador = df_res,
+  p_value = p_F_global
+)
+```
+
+```{r}
+anova(modelo_ref)
+```
+
+Nota: `anova(modelo_ref)` muestra sumas de cuadrados secuenciales. Para comparar la prueba global contra el modelo con solo intercepto, usar los calculos de `SSR`, `SSE` y `F_global` anteriores.
+
+## Devianza, Log-Verosimilitud, AIC y BIC
+
+En el modelo gaussiano ajustado por minimos cuadrados, la devianza reportada por `deviance()` coincide con `SSE`.
+
+La log-verosimilitud maximizada, usando el estimador de maxima verosimilitud $\hat\sigma^2_{ML}=SSE/n$, es:
+
+$$
+\ell(\hat\beta,\hat\sigma^2_{ML})
+=
+-\frac{n}{2}
+\left[
+\log(2\pi) +
+1 +
+\log\left(\frac{SSE}{n}\right)
+\right].
+$$
+
+Para `AIC.lm`, R cuenta como parametros los $p$ coeficientes y un parametro adicional de escala, por lo que $k=p+1$.
+
+```{r}
+sigma2_ML <- SSE / n
+logLik_manual <- -n / 2 * (log(2 * pi) + 1 + log(sigma2_ML))
+k <- p + 1
+
+lik_ref <- data.frame(
+  cantidad = c(
+    "deviance_lm",
+    "SSE",
+    "sigma2_ML",
+    "logLik_manual",
+    "logLik_lm",
+    "AIC_manual",
+    "AIC_lm",
+    "BIC_manual",
+    "BIC_lm"
+  ),
+  valor = c(
+    deviance(modelo_ref),
+    SSE,
+    sigma2_ML,
+    logLik_manual,
+    as.numeric(logLik(modelo_ref)),
+    -2 * logLik_manual + 2 * k,
+    AIC(modelo_ref),
+    -2 * logLik_manual + log(n) * k,
+    BIC(modelo_ref)
+  )
+)
+
+lik_ref
+```
+
+## Modelo Reducido y Prueba F Parcial
+
+Para tener una segunda referencia de comparacion, usamos un modelo reducido:
+
+$$
+y_i =
+\beta_0 +
+\beta_3 x_{i3} +
+\beta_4 x_{i4} +
+\beta_5 x_{i5} +
+\varepsilon_i.
+$$
+
+La hipotesis parcial es:
+
+$$
+H_0:
+\beta_1 = \beta_2 = 0
+\mid x_3,x_4,x_5.
+$$
+
+```{r}
+modelo_red <- lm(y ~ x3 + x4 + x5, data = datos)
+summary(modelo_red)
+```
+
+```{r}
+anova(modelo_red, modelo_ref)
+```
+
+Manual:
+
+$$
+F =
+\frac{(SSE_R - SSE_C)/(p_C-p_R)}
+     {SSE_C/(n-p_C)}.
+$$
+
+```{r}
+SSE_red <- sum(resid(modelo_red)^2)
+p_red <- length(coef(modelo_red))
+
+F_parcial <- ((SSE_red - SSE) / (p - p_red)) / (SSE / (n - p))
+p_F_parcial <- pf(F_parcial, df1 = p - p_red, df2 = n - p, lower.tail = FALSE)
+
+data.frame(
+  SSE_reducido = SSE_red,
+  SSE_completo = SSE,
+  gl_numerador = p - p_red,
+  gl_denominador = n - p,
+  F_parcial = F_parcial,
+  p_value = p_F_parcial
+)
+```
+
+## Prueba de Razon de Verosimilitudes
+
+Para el mismo contraste parcial, la prueba de razon de verosimilitudes usa:
+
+$$
+LR =
+2(\ell_C - \ell_R).
+$$
+
+y se compara de forma asintotica con una $\chi^2$ con $p_C-p_R$ grados de libertad.
+
+```{r}
+LR <- 2 * (as.numeric(logLik(modelo_ref)) - as.numeric(logLik(modelo_red)))
+p_LR <- pchisq(LR, df = p - p_red, lower.tail = FALSE)
+
+data.frame(
+  LR = LR,
+  gl = p - p_red,
+  p_value = p_LR
+)
+```
+
+## Objetivos para la Implementacion Manual
+
+La implementacion manual/C++ debera recibir, como minimo, una matriz `X` y un vector `y`. Para este documento, esa matriz tiene 20 filas y 6 columnas: intercepto, `x1`, `x2`, `x3`, `x4`, `x5`.
+
+El primer nucleo debe reproducir:
+
+- `beta_hat`: coeficientes estimados.
+- `fitted`: valores ajustados.
+- `residuals`: residuos ordinarios.
+- `SSE`, `SSR`, `SST`.
+- `MSE`, `MSR`, `sigma_hat`.
+- `R2` y `R2_adj`.
+- `vcov(beta_hat)`.
+- errores estandar, estadisticos `t` y p-values.
+- intervalos de confianza.
+- prueba F global.
+- devianza gaussiana.
+- log-verosimilitud, AIC y BIC.
+- prueba F parcial entre modelo reducido y completo.
+- LRT entre modelo reducido y completo.
+
+## Referencias Numericas Compactas
+
+Esta ultima tabla deja los valores escalares principales en un formato facil de comparar.
+
+```{r}
+referencia_escalar <- data.frame(
+  cantidad = c(
+    "n",
+    "p",
+    "df_res",
+    "SST",
+    "SSR",
+    "SSE",
+    "MSE",
+    "MSR",
+    "sigma_hat",
+    "R2",
+    "R2_adj",
+    "F_global",
+    "p_F_global",
+    "logLik",
+    "AIC",
+    "BIC",
+    "SSE_reducido",
+    "F_parcial",
+    "p_F_parcial",
+    "LR",
+    "p_LR"
+  ),
+  valor = c(
+    n,
+    p,
+    df_res,
+    SST,
+    SSR,
+    SSE,
+    MSE,
+    MSR,
+    sigma_hat,
+    R2,
+    R2_adj,
+    F_global,
+    p_F_global,
+    as.numeric(logLik(modelo_ref)),
+    AIC(modelo_ref),
+    BIC(modelo_ref),
+    SSE_red,
+    F_parcial,
+    p_F_parcial,
+    LR,
+    p_LR
+  )
+)
+
+referencia_escalar
+```
